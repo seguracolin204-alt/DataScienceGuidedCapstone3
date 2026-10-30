@@ -1,0 +1,158 @@
+========================================================================
+CAPSTONE THREE - FINAL MODEL METRICS
+Optimizing Term Deposit Marketing Campaigns for a European Bank
+Colin Segura | Springboard Data Science Career Track | BIS
+========================================================================
+
+FINAL MODEL
+------------------------------------------------------------------------
+Model type:           GradientBoostingClassifier
+Model name:           Gradient Boosting (tuned)
+Task:                 Binary classification (subscribed = yes/no)
+Positive class rate:  ~15.8% (moderate imbalance, 5.3:1)
+Number of features:   52
+
+HYPERPARAMETERS (best from GridSearchCV, 3-fold stratified)
+------------------------------------------------------------------------
+  criterion: deprecated
+  learning_rate: 0.1
+  loss: log_loss
+  max_depth: 3
+  max_features: None
+  min_samples_leaf: 1
+  min_samples_split: 2
+  n_estimators: 200
+  random_state: 42
+  subsample: 1.0
+
+PERFORMANCE METRICS
+------------------------------------------------------------------------
+Cross-validation (training set, 3-fold stratified):
+  CV ROC AUC:       0.7446  (std: 0.0026)
+
+Held-out test set (8,238 customers):
+  Test ROC AUC:     0.7402
+  Test PR AUC:      0.3810
+
+Precision at top-k on test set:
+  Top  5%:          54.3% precision, 17.1% recall, 3.4x lift over random
+  Top 10%:          45.1% precision, 28.5% recall, 2.8x lift
+  Top 20%:          36.1% precision, 45.6% recall, 2.3x lift
+
+BUSINESS IMPACT (illustrative assumptions)
+------------------------------------------------------------------------
+  Cost per outbound call:        $8.00
+  Revenue per subscription:      $80.00
+  Optimal threshold:             0.09
+  Expected profit (test set):    $49,280
+  Call-everyone baseline:        $38,416
+  Lift over call-everyone:       +$10,864 (+28%)
+
+BASELINE COMPARISONS (CV ROC AUC)
+------------------------------------------------------------------------
+  Majority Class predictor:      0.500 (mathematical floor)
+  Rule-based (EDA Section 9):    0.524 (single-threshold rule)
+  Logistic Regression (C=0.01):  0.7392
+  Random Forest (tuned):         0.7377
+  Gradient Boosting (tuned):     0.7446  <-- SELECTED
+
+FEATURES (52 total, after one-hot encoding)
+------------------------------------------------------------------------
+   1. age
+   2. campaign
+   3. pdays
+   4. previous
+   5. emp.var.rate
+   6. euribor3m
+   7. default_was_unknown
+   8. education_was_unknown
+   9. was_contacted_before
+  10. job_blue-collar
+  11. job_entrepreneur
+  12. job_housemaid
+  13. job_management
+  14. job_missing
+  15. job_retired
+  16. job_self-employed
+  17. job_services
+  18. job_student
+  19. job_technician
+  20. job_unemployed
+  21. marital_married
+  22. marital_missing
+  23. marital_single
+  24. education_basic.6y
+  25. education_basic.9y
+  26. education_high.school
+  27. education_illiterate
+  28. education_missing
+  29. education_professional.course
+  30. education_university.degree
+  31. default_no
+  32. default_yes
+  33. housing_no
+  34. housing_yes
+  35. loan_no
+  36. loan_yes
+  37. contact_telephone
+  38. month_aug
+  39. month_dec
+  40. month_jul
+  41. month_jun
+  42. month_mar
+  43. month_may
+  44. month_nov
+  45. month_oct
+  46. month_sep
+  47. day_of_week_mon
+  48. day_of_week_thu
+  49. day_of_week_tue
+  50. day_of_week_wed
+  51. poutcome_nonexistent
+  52. poutcome_success
+
+TOP 15 FEATURES BY IMPORTANCE
+------------------------------------------------------------------------
+   1. contact_telephone                         0.2066
+   2. age                                       0.1115
+   3. month_oct                                 0.0820
+   4. euribor3m                                 0.0709
+   5. month_mar                                 0.0705
+   6. poutcome_success                          0.0698
+   7. month_sep                                 0.0506
+   8. job_retired                               0.0481
+   9. emp.var.rate                              0.0417
+  10. job_student                               0.0415
+  11. job_blue-collar                           0.0400
+  12. month_dec                                 0.0334
+  13. month_may                                 0.0254
+  14. previous                                  0.0168
+  15. job_services                              0.0131
+
+DATA PIPELINE
+------------------------------------------------------------------------
+Raw source:  UCI Bank Marketing (Moro, Cortez & Rita, 2014)
+             41,188 records, 20 features + binary target
+             Portuguese bank phone campaign, May 2008 to Nov 2010
+
+Pre-processing:
+  - 'unknown' categorical values converted to 'missing' category
+  - Binary indicator flags for default_was_unknown, education_was_unknown
+  - pdays=999 recoded with was_contacted_before indicator + median impute
+  - Call duration dropped (perfect target leakage per UCI documentation)
+  - 23 duplicate rows removed
+  - Target yes/no encoded as 1/0
+  - Month and day_of_week set as ordered categoricals
+  - Dropped cons.price.idx, cons.conf.idx, nr.employed (redundant with euribor3m)
+  - One-hot encoding with drop_first=True (19 features -> 52 features)
+  - 80/20 stratified train/test split, random_state=42
+  - StandardScaler fit on training set only
+
+Training data:
+  - Training rows: 32,950 customers
+  - Test rows:      8,238 customers
+  - Feature count:  52 (after one-hot encoding)
+
+========================================================================
+For full pipeline see 03_preprocessing_modeling.ipynb in the repo.
+========================================================================
